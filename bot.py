@@ -6,23 +6,43 @@ from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filte
 # Token aur App URL configure karein
 TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN")
 PORT = int(os.environ.get("PORT", 5000))
-# Render ka URL yahan dalein (jaise https://my-telegram-bot.onrender.com)
-RENDER_URL = os.environ.get("RENDER_URL", "YOUR_RENDER_APP_URL")
+RENDER_URL = os.getenv("RENDER_URL", "YOUR_RENDER_APP_URL")
 
 app = Flask(__name__)
 
+# Specific WikiProjects aur Requested Articles ki List
 TODO_MESSAGE = (
-    "👋 **Hello! Yeh lijiye Wikipedia ke requested articles aur to-do lists ke links:**\n\n"
-    "📋 **1. English Wikipedia To-Do Lists (All Projects):**\n"
-    "• [Wikipedia:Community portal/ToDo](https://en.wikipedia.org/wiki/Wikipedia:Community_portal/ToDo)\n"
-    "• [Wikipedia:Task Directory](https://en.wikipedia.org/wiki/Wikipedia:Task_Directory)\n\n"
-    "📌 **2. Wikipedia:Requested Articles Lists:**\n"
-    "• [Main Requested Articles Page](https://en.wikipedia.org/wiki/Wikipedia:Requested_articles)\n"
+    "👋 **Hello! Yeh lijiye Wikipedia ke चुनिंदा WikiProjects aur Requested Articles ke links:**\n\n"
+    "🔬 **1. विज्ञान, प्रौद्योगिकी और तकनीक (Science & Technology)**\n"
+    "• [WikiProject Science](https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Science)\n"
+    "• [WikiProject Computer Science](https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Computer_science)\n"
+    "• [WikiProject Physics](https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Physics)\n"
+    "• [WikiProject Chemistry](https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Chemistry)\n"
+    "• [WikiProject Mathematics](https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Mathematics)\n"
+    "• [WikiProject Electronics](https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Electronics)\n"
+    "• [WikiProject Medicine](https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Medicine)\n\n"
+
+    "🌍 **2. इतिहास, भूगोल और समाज (History, Geography & Society)**\n"
+    "• [WikiProject History](https://en.wikipedia.org/wiki/Wikipedia:WikiProject_History)\n"
+    "• [WikiProject Biography](https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Biography)\n"
+    "• [WikiProject Geography](https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Geography)\n"
+    "• [WikiProject Countries](https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Countries)\n"
+    "• [WikiProject India](https://en.wikipedia.org/wiki/Wikipedia:WikiProject_India)\n"
+    "• [WikiProject Military History](https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Military_history)\n\n"
+
+    "🎬 **3. कला, संस्कृति और मनोरंजन (Arts & Entertainment)**\n"
+    "• [WikiProject Film](https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Film)\n"
+    "• [WikiProject Music](https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Music)\n"
+    "• [WikiProject Television](https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Television)\n"
+    "• [WikiProject Video Games](https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Video_games)\n"
+    "• [WikiProject Architecture](https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Architecture)\n\n"
+
+    "📌 **4. Wikipedia Requested Articles**\n"
+    "• [Main Requested Articles](https://en.wikipedia.org/wiki/Wikipedia:Requested_articles)\n"
     "• [Requested Articles by Subject](https://en.wikipedia.org/wiki/Wikipedia:Requested_articles/ByCategory)\n\n"
     "Aap in links par click karke direct pages par ja sakte hain!"
 )
 
-# Telegram Application ko globally initialize karein
 telegram_app = None
 
 async def setup_bot():
@@ -47,7 +67,6 @@ async def setup_bot():
 
 @app.route(f"/{TOKEN}", methods=["POST"])
 def webhook():
-    """Telegram se aane wale updates ko handle karne ke liye endpoint"""
     import asyncio
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -65,5 +84,4 @@ def home():
     return "Bot is running on Render!"
 
 if __name__ == "__main__":
-    # Local testing ke liye ya Gunicorn ke through run hoga
     app.run(host="0.0.0.0", port=PORT)
