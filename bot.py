@@ -1,11 +1,24 @@
 import os
 import io
+import threading
+from flask import Flask
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filters
 from PIL import Image
 from colorthief import ColorThief
 
-# Render ke environment variable se token securely fetch karein
+# 1. Chhota sa Flask app banayein taaki Render ka port requirement poora ho jaye
+app_flask = Flask(__name__)
+
+@app_flask.route('/')
+def home():
+    return "🤖 ViMusic Theme Bot is running successfully!"
+
+def run_flask():
+    port = int(os.environ.get("PORT", 10000))
+    app_flask.run(host="0.0.0.0", port=port)
+
+# 2. Telegram Bot Logic
 TOKEN = os.getenv("TOKEN")
 
 def rgb_to_hex(rgb):
@@ -16,7 +29,6 @@ async def handle_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     file = await context.bot.get_file(photo.file_id)
     image_bytes = await file.download_as_bytearray()
     
-    img = Image.open(io.BytesIO(image_bytes))
     color_thief = ColorThief(io.BytesIO(image_bytes))
     dominant_color_rgb = color_thief.get_color(quality=1)
     dominant_hex = rgb_to_hex(dominant_color_rgb)
@@ -45,10 +57,16 @@ def main():
     if not TOKEN:
         raise ValueError("No TOKEN found! Please set the TOKEN environment variable.")
         
+    # Flask server ko alag thread mein start karein
+    flask_thread = threading.Thread(target=run_flask)
+    flask_thread.daemon = True
+    flask_thread.start()
+
+    # Telegram bot app start karein
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(MessageHandler(filters.PHOTO, handle_image))
     
-    print("🤖 ViMusic Theme Bot is running...")
+    print("🤖 ViMusic Theme Bot is running with Flask web server...")
     app.run_polling()
 
 if __name__ == "__main__":
